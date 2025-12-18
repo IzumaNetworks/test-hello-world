@@ -1,86 +1,108 @@
-Simple example golang app with a k8s deployment for use in other examples.
+# Test Hello World
 
-This is good boilerplate code for starting a Golang project that will deploy on Kubernetes.
+A simple Go "Hello World" program for testing Docker container deployments. This program accepts a configurable greeting name via CLI flag or environment variable.
 
-### This example is used by these tutorials / posts
+## Features
 
-[Sync a pod with rsync for fast K8s ECT cycle](https://www.izumanetworks.com/blog/use-rsync-with-k8s/)
+- Prints a greeting message in a loop every 5 seconds
+- HTTP server on port 8080 with `/hello` endpoint for health checks
+- Configurable greeting name via:
+  - CLI flag: `--name`
+  - Environment variable: `HELLO_NAME`
+  - Default: "World"
 
-[How to build a x86/amd64 docker container image on Apple silicon (or any other arch)](https://www.izumanetworks.com/blog/build-docker-on-apple-m/)
+## Usage
 
-[Build, push and pull a container using Github GHCR or Gitlab Container Registry](https://www.izumanetworks.com/blog/use-github-gitlab-for-docker-registry/)
+### Running Locally
 
-## Step 1: Build docker images
+```bash
+# Build the Go program
+cd app && go build -o app .
 
-Assuming you will deploy to an `amd64` arch...
+# Run with default ("World")
+./app
 
-If building on an `amd64` arch machine:
+# Run with CLI flag
+./app --name "Developer"
 
-```
-docker build --tag trivial-golang-k8s-deployment .
-```
-
-If on another arch, such as Apple Silicon etc.
-
-```
-docker buildx build --platform linux/amd64 --tag trivial-golang-k8s-deployment --load .
-```
-
-Or if need Cgo and you want an Alpine base image:
-
-```
-docker buildx build -f Dockerfile-cross-cgo-xx-alpine --platform linux/amd64 --tag trivial-golang-k8s-deployment --load .
+# Run with environment variable
+HELLO_NAME="Developer" ./app
 ```
 
-To build the development images:
+### Running with Docker
 
+#### Build the Docker image
+
+```bash
+# Standard build
+docker build --tag test-hello-world .
+
+# Cross-platform build (e.g., on Apple Silicon for amd64)
+docker buildx build --platform linux/amd64 --tag test-hello-world --load .
 ```
-docker build --tag trivial-golang-k8s-deployment -f Dockerfile.dev .
+
+#### Run the container
+
+```bash
+# Run with default greeting
+docker run -p 8080:8080 test-hello-world
+
+# Run with environment variable
+docker run -p 8080:8080 -e HELLO_NAME="Docker" test-hello-world
+
+# Run with CLI argument
+docker run -p 8080:8080 test-hello-world --name "Docker"
 ```
 
-Or
+#### Test the HTTP endpoint
 
+```bash
+curl http://localhost:8080/hello
+# Returns: Hello, Docker!
 ```
-docker buildx build --platform linux/amd64 --tag trivial-golang-k8s-deployment -f Dockerfile.dev --load .
-```
 
-## Step 2: Upload to some docker registry
+## Deploy to Kubernetes
 
-_If you just want a test deployment using the original example - you can skip this_
-
-Otherwise read: https://www.izumanetworks.com/blog/use-github-gitlab-for-docker-registry/
-
-## Step 3: Deploy to K8s
-
-For deployment on K8s you will need to push the docker image to a registry. You _can't_ push to the registry for this repo, but these instructions will work if you forked this repo:
-
-```
+```bash
 kubectl apply -f deployment.yaml
 ```
 
-To apply our basic deployment.
+The deployment sets `HELLO_NAME=Kubernetes` by default. You can customize by editing `deployment.yaml`:
 
 ```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: trivial-golang-k8s-deployment
-  labels:
-    app: trivial-golang-k8s-deployment
-spec:
-  containers:
-  - name: trivial-golang-k8s-deployment
-    image: ghcr.io/izumanetworks/trivial-golang-k8s-deployment:latest
-    imagePullPolicy: Always
-    ports:
-    - containerPort: 8080
-    livenessProbe:
-      httpGet:
-        path: /hello
-        port: 8080
-      initialDelaySeconds: 5
-      periodSeconds: 5
-  imagePullSecrets:
-    - name: regcred
+env:
+- name: HELLO_NAME
+  value: "YourCustomName"
 ```
 
+Or use CLI args in the container spec:
+
+```yaml
+containers:
+- name: test-hello-world
+  image: ghcr.io/izumanetworks/test-hello-world:latest
+  args: ["--name", "YourCustomName"]
+```
+
+## Dockerfile Variants
+
+| Dockerfile | Description |
+|------------|-------------|
+| `Dockerfile` | Standard build |
+| `Dockerfile-cross` | Cross-platform build without CGO |
+| `Dockerfile-cross-cgo` | Cross-platform build with CGO |
+| `Dockerfile-cross-cgo-xx` | Cross-platform build with xx tools |
+| `Dockerfile-cross-cgo-xx-alpine` | Alpine-based cross-platform build |
+| `Dockerfile-dev` | Development image with rsync for live reload |
+
+## Example Output
+
+```
+Starting with greeting name: Docker
+HTTP server listening on :8080
+Hello, Docker! Start.
+Hello, Docker! Count: 0
+Hello, Docker! Count: 1
+Hello, Docker! Count: 2
+...
+```

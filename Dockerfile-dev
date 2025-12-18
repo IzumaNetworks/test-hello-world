@@ -1,6 +1,6 @@
 FROM golang:1.20
-LABEL org.opencontainers.image.source=https://github.com/IzumaNetworks/trivial-golang-k8s-deployment
-LABEL org.opencontainers.image.description="Trivial Go K8s example DEBUG"
+LABEL org.opencontainers.image.source=https://github.com/IzumaNetworks/test-hello-world
+LABEL org.opencontainers.image.description="Hello World Go test container DEBUG"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
 # golang container is based on Debian
@@ -14,5 +14,6 @@ ADD loop.sh /
 ENV CGO_ENABLED=0
 RUN cd /app && go build -o app .
 WORKDIR /app
+ENV HELLO_NAME="World"
 # just start a dummy loop to keep the container up
 ENTRYPOINT [ "/loop.sh" ]
