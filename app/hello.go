@@ -8,27 +8,18 @@ import (
 	"time"
 )
 
-// getName returns the name to greet, checking CLI flag first, then env var, then default
-func getName() string {
-	// Define CLI flag
-	nameFlag := flag.String("name", "", "Name to greet (can also use HELLO_NAME env var)")
-	flag.Parse()
+var (
+	greetName string
+	port      string
+)
 
-	// Check CLI flag first
-	if *nameFlag != "" {
-		return *nameFlag
+// getEnvOrDefault returns the environment variable value or a default
+func getEnvOrDefault(key, defaultVal string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
 	}
-
-	// Fall back to environment variable
-	if envName := os.Getenv("HELLO_NAME"); envName != "" {
-		return envName
-	}
-
-	// Default value
-	return "World"
+	return defaultVal
 }
-
-var greetName string
 
 func hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Got /hello request\n")
@@ -37,13 +28,32 @@ func hello(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	greetName = getName()
+	// Define CLI flags
+	nameFlag := flag.String("name", "", "Name to greet (can also use HELLO_NAME env var)")
+	portFlag := flag.String("port", "", "Port to listen on (can also use HELLO_PORT env var)")
+	flag.Parse()
+
+	// Get name: CLI flag > env var > default
+	if *nameFlag != "" {
+		greetName = *nameFlag
+	} else {
+		greetName = getEnvOrDefault("HELLO_NAME", "World")
+	}
+
+	// Get port: CLI flag > env var > default
+	if *portFlag != "" {
+		port = *portFlag
+	} else {
+		port = getEnvOrDefault("HELLO_PORT", "8090")
+	}
+
 	fmt.Printf("Starting with greeting name: %s\n", greetName)
+	fmt.Printf("Using port: %s\n", port)
 
 	go func() {
 		http.HandleFunc("/hello", hello)
-		fmt.Printf("HTTP server listening on :8080\n")
-		http.ListenAndServe(":8080", nil)
+		fmt.Printf("HTTP server listening on :%s\n", port)
+		http.ListenAndServe(":"+port, nil)
 	}()
 
 	fmt.Printf("Hello, %s! Start.\n", greetName)

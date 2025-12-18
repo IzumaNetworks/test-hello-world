@@ -15,5 +15,6 @@ ENV CGO_ENABLED=0
 RUN cd /app && go build -o app .
 WORKDIR /app
 ENV HELLO_NAME="World"
+ENV HELLO_PORT="8090"
 # just start a dummy loop to keep the container up
 ENTRYPOINT [ "/loop.sh" ]

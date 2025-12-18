@@ -10,14 +10,16 @@ spec:
     image: ghcr.io/izumanetworks/test-hello-world:latest
     imagePullPolicy: Always
     ports:
-    - containerPort: 8080
+    - containerPort: 8090
     env:
     - name: HELLO_NAME
       value: "Kubernetes"
+    - name: HELLO_PORT
+      value: "8090"
     livenessProbe:
       httpGet:
         path: /hello
-        port: 8080
+        port: 8090
       initialDelaySeconds: 5
       periodSeconds: 5
   imagePullSecrets:

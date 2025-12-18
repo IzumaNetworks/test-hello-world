@@ -16,5 +16,6 @@ WORKDIR /app
 RUN xx-go --wrap
 RUN go build -o app . && xx-verify app
 ENV HELLO_NAME="World"
+ENV HELLO_PORT="8090"
 ENTRYPOINT [ "/app/app" ]
 CMD []

@@ -8,8 +8,9 @@ ENV CGO_ENABLED=0
 RUN cd /app && go build -o app .
 WORKDIR /app
 
-# Default greeting name (can be overridden at runtime)
+# Default settings (can be overridden at runtime)
 ENV HELLO_NAME="World"
+ENV HELLO_PORT="8090"
 
 # Use ENTRYPOINT + CMD pattern so CLI args can be passed
 ENTRYPOINT [ "/app/app" ]

@@ -14,5 +14,6 @@ WORKDIR /app
 # RUN gcc -dumpmachine
 RUN CC=x86_64-linux-gnu-gcc GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o app .
 ENV HELLO_NAME="World"
+ENV HELLO_PORT="8090"
 ENTRYPOINT [ "/app/app" ]
 CMD []

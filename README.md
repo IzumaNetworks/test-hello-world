@@ -1,15 +1,14 @@
 # Test Hello World
 
-A simple Go "Hello World" program for testing Docker container deployments. This program accepts a configurable greeting name via CLI flag or environment variable.
+A simple Go "Hello World" program for testing Docker container deployments. This program accepts configurable greeting name and port via CLI flags or environment variables.
 
 ## Features
 
 - Prints a greeting message in a loop every 5 seconds
-- HTTP server on port 8080 with `/hello` endpoint for health checks
-- Configurable greeting name via:
-  - CLI flag: `--name`
-  - Environment variable: `HELLO_NAME`
-  - Default: "World"
+- HTTP server with `/hello` endpoint for health checks
+- Configurable via CLI flags or environment variables:
+  - `--name` / `HELLO_NAME`: Name to greet (default: "World")
+  - `--port` / `HELLO_PORT`: Port to listen on (default: "8090")
 
 ## Usage
 
@@ -19,14 +18,14 @@ A simple Go "Hello World" program for testing Docker container deployments. This
 # Build the Go program
 cd app && go build -o app .
 
-# Run with default ("World")
+# Run with defaults
 ./app
 
-# Run with CLI flag
-./app --name "Developer"
+# Run with CLI flags
+./app --name "Developer" --port 9000
 
-# Run with environment variable
-HELLO_NAME="Developer" ./app
+# Run with environment variables
+HELLO_NAME="Developer" HELLO_PORT="9000" ./app
 ```
 
 ### Running with Docker
@@ -44,20 +43,23 @@ docker buildx build --platform linux/amd64 --tag test-hello-world --load .
 #### Run the container
 
 ```bash
-# Run with default greeting
-docker run -p 8080:8080 test-hello-world
+# Run with defaults (port 8090)
+docker run -p 8090:8090 test-hello-world
 
-# Run with environment variable
-docker run -p 8080:8080 -e HELLO_NAME="Docker" test-hello-world
+# Run with custom name via environment variable
+docker run -p 8090:8090 -e HELLO_NAME="Docker" test-hello-world
 
-# Run with CLI argument
-docker run -p 8080:8080 test-hello-world --name "Docker"
+# Run with custom port
+docker run -p 9000:9000 -e HELLO_PORT="9000" test-hello-world
+
+# Run with CLI arguments
+docker run -p 8090:8090 test-hello-world --name "Docker"
 ```
 
 #### Test the HTTP endpoint
 
 ```bash
-curl http://localhost:8080/hello
+curl http://localhost:8090/hello
 # Returns: Hello, Docker!
 ```
 
@@ -67,12 +69,14 @@ curl http://localhost:8080/hello
 kubectl apply -f deployment.yaml
 ```
 
-The deployment sets `HELLO_NAME=Kubernetes` by default. You can customize by editing `deployment.yaml`:
+The deployment sets `HELLO_NAME=Kubernetes` and `HELLO_PORT=8090` by default. Customize in `deployment.yaml`:
 
 ```yaml
 env:
 - name: HELLO_NAME
   value: "YourCustomName"
+- name: HELLO_PORT
+  value: "9000"
 ```
 
 Or use CLI args in the container spec:
@@ -81,7 +85,7 @@ Or use CLI args in the container spec:
 containers:
 - name: test-hello-world
   image: ghcr.io/izumanetworks/test-hello-world:latest
-  args: ["--name", "YourCustomName"]
+  args: ["--name", "YourCustomName", "--port", "9000"]
 ```
 
 ## Dockerfile Variants
@@ -99,7 +103,8 @@ containers:
 
 ```
 Starting with greeting name: Docker
-HTTP server listening on :8080
+Using port: 8090
+HTTP server listening on :8090
 Hello, Docker! Start.
 Hello, Docker! Count: 0
 Hello, Docker! Count: 1

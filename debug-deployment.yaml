@@ -10,9 +10,11 @@ spec:
     image: ghcr.io/izumanetworks/test-hello-world-debug:latest
     imagePullPolicy: Always
     ports:
-    - containerPort: 8080
+    - containerPort: 8090
     env:
     - name: HELLO_NAME
       value: "Debug"
+    - name: HELLO_PORT
+      value: "8090"
   imagePullSecrets:
     - name: regcred
