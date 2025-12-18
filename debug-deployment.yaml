@@ -1,15 +1,18 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: trivial-golang-k8s-deployment
+  name: test-hello-world-debug
   labels:
-    app: trivial-golang-k8s-deployment
+    app: test-hello-world
 spec:
   containers:
-  - name: trivial-golang-k8s-deployment-debug
-    image: ghcr.io/izumanetworks/trivial-golang-k8s-deployment-debug:latest
+  - name: test-hello-world-debug
+    image: ghcr.io/izumanetworks/test-hello-world-debug:latest
     imagePullPolicy: Always
     ports:
     - containerPort: 8080
+    env:
+    - name: HELLO_NAME
+      value: "Debug"
   imagePullSecrets:
     - name: regcred

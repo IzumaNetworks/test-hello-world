@@ -1,7 +1,7 @@
 FROM --platform=$BUILDPLATFORM tonistiigi/xx AS xx
 FROM --platform=$BUILDPLATFORM golang:1.20-alpine
-LABEL org.opencontainers.image.source=https://github.com/IzumaNetworks/trivial-golang-k8s-deployment
-LABEL org.opencontainers.image.description="Trivial Go K8s example"
+LABEL org.opencontainers.image.source=https://github.com/IzumaNetworks/test-hello-world
+LABEL org.opencontainers.image.description="Hello World Go test container"
 LABEL org.opencontainers.image.licenses=Apache-2.0
 
 # get xx tools to build image
@@ -15,4 +15,6 @@ WORKDIR /app
 # RUN gcc -dumpmachine
 RUN xx-go --wrap
 RUN go build -o app . && xx-verify app
+ENV HELLO_NAME="World"
 ENTRYPOINT [ "/app/app" ]
+CMD []
